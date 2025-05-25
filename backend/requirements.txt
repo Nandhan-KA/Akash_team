@@ -1,0 +1,9 @@
+protobuf==3.19.6
+flask==2.0.1
+flask-cors==3.0.10
+werkzeug==2.0.3
+opencv-python==4.5.3.56
+numpy==1.21.2
+tensorflow==2.11.0
+pillow==9.5.0
+tensorflow-hub==0.12.0
