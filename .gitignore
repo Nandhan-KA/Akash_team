@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-
+.next
 parts/
 sdist/
 var/
@@ -27,8 +27,8 @@ wheels/
 .installed.cfg
 *.egg
 venv/
-env/
-.env/
+
+
 .venv/
 ENV/
 
@@ -42,7 +42,6 @@ htmlcov/
 /.next/
 /out/
 .next/
-next-env.d.ts
 
 # production
 /build
@@ -53,8 +52,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
+
 
 # vercel
 .vercel
@@ -65,12 +63,7 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
-.env*.local
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+
 
 # IDE
 .idea/

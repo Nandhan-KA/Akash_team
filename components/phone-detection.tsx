@@ -48,13 +48,16 @@ export function PhoneDetection() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
       
+      console.log("Checking server status...");
       const response = await axios.get(`${API_URL}/api/health`, {
         signal: controller.signal
       });
       
       clearTimeout(timeoutId);
-      setServerOnline(response.data.status === 'ok');
-      return response.data.status === 'ok';
+      const isOnline = response.data.status === 'ok';
+      console.log("Server online status:", isOnline);
+      setServerOnline(isOnline);
+      return isOnline;
     } catch (error) {
       console.error("Server check failed:", error);
       setServerOnline(false);
@@ -133,14 +136,14 @@ export function PhoneDetection() {
   // Send frame to server for detection
   const sendFrameForDetection = async (imageData: string): Promise<DetectedObject[]> => {
     try {
-      if (!serverOnline) {
-        return simulateDetection();
-      }
-      
+      console.log("Sending frame to server for detection...");
       const response = await axios.post<DetectionResponse>(
         `${API_URL}/api/detect-phone`,
         { imageData },
-        { headers: { 'Content-Type': 'application/json' } }
+        { 
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000 // Add timeout of 5 seconds
+        }
       );
       
       if (response.data.error) {
@@ -148,6 +151,7 @@ export function PhoneDetection() {
         return simulateDetection();
       }
       
+      console.log("Received detection response:", response.data);
       return response.data.detections;
     } catch (error) {
       console.error("Error sending frame to server:", error);
@@ -187,7 +191,10 @@ export function PhoneDetection() {
   // Detect objects in video frame
   const detectObjects = async () => {
     try {
-      if (!videoRef.current || !canvasRef.current) return;
+      if (!videoRef.current || !canvasRef.current) {
+        console.log("Video or canvas ref not available");
+        return;
+      }
       
       if (videoRef.current.readyState === 4) {
         // Limit detection frequency to avoid overwhelming the server (every 500ms)
@@ -206,6 +213,8 @@ export function PhoneDetection() {
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
         
+        console.log("Video dimensions:", videoWidth, "x", videoHeight);
+        
         // Set canvas dimensions to match video
         const canvas = canvasRef.current;
         canvas.width = videoWidth;
@@ -214,6 +223,7 @@ export function PhoneDetection() {
         // Draw video to canvas
         const ctx = canvas.getContext('2d');
         if (!ctx) {
+          console.error("Failed to get canvas context");
           processingRef.current = false;
           animationRef.current = requestAnimationFrame(detectObjects);
           return;
@@ -223,7 +233,8 @@ export function PhoneDetection() {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         // Get the frame as base64 image to send to server
-        const imageData = canvas.toDataURL('image/jpeg', 0.7);  // Lower quality for faster transfer
+        const imageData = canvas.toDataURL('image/jpeg', 0.7);
+        console.log("Frame captured, sending to server...");
         
         // Send to server for detection
         const predictions = await sendFrameForDetection(imageData);
